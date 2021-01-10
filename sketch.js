@@ -8,17 +8,21 @@ var box1, pig1,pig3;
 var backgroundImg,platform;
 var bird, slingshot;
 var gameState = "Start";
+var bgImg;
+var score = 0;
 
 
 
 function preload() {
-    backgroundImg = loadImage("sprites/bg.png");
+    //backgroundImg = loadImage("sprites/bg.png");
+    
 }
 
 function setup(){
     var canvas = createCanvas(1200,400);
     engine = Engine.create();
-    world = engine.world;
+    world = engine.world; 
+    getBackgroundImage();
 
 
     ground = new Ground(600,height,1200,20);
@@ -46,9 +50,14 @@ function setup(){
 }
 
 function draw(){
-    background(backgroundImg);
+    if(bgImg)
+    background(bgImg);
     Engine.update(engine);
     //strokeWeight(4);
+
+    text("Score:" +score, width-100, 100); 
+
+
     box1.display();
     box2.display();
     ground.display();
@@ -59,7 +68,8 @@ function draw(){
     box4.display();
     pig3.display();
     log3.display();
-
+    pig1.score(); 
+    pig3.score();
     box5.display();
     log4.display();
     log5.display();
@@ -72,23 +82,54 @@ function draw(){
 
 function mouseDragged(){
 
-    if(gameState === "Start"){
-     
+    if(gameState === "Start" && bird.body.position.x < 250){
+
+    
+     console.log(bird.body.position.x)
     Matter.Body.setPosition(bird.body, {x: mouseX , y: mouseY});
+
     }
+    
     
 }
 
 
 function mouseReleased(){
 
-     gameState = "launched";
+    if(gameState === "Start" && bird.body.position.x< 200){
+        gameState = "launched";
 
-    slingshot.fly();
+        slingshot.fly();
+    }
+     
 }
 
 function keyPressed(){
-    if(keyCode === 32){
+    if(keyCode === 32 && bird.body.speed<10 || bird.body.position.x<0 || bird.body.position.x > 1200 || bird.body.position.y<0 || bird.body.position.y>800){
         slingshot.attach(bird.body);
+        bird.trajectory = [];
+        Matter.Body.setPosition(bird.body, {x: 200 , y: 50});
+        gameState = "Start";
+
+        
+         
     }
+}
+
+async function getBackgroundImage(){
+    var response = await fetch("http://worldclockapi.com/api/json/utc/now");
+    var responsejson = await response.json();
+    var dateTime = responsejson.currentDateTime
+    
+    var hour = dateTime.slice(11,13);
+    //console.log(hour);
+
+    if(hour>= 06 && hour<= 14){
+        bg = "sprites/bg.png";
+     }
+     else{
+         bg = "sprites/bg2.jpg";
+     }
+    bgImg = loadImage(bg);
+
 }
